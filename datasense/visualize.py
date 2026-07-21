@@ -13,19 +13,30 @@ from typing import Any
 
 def _setup_chinese_font():
     """配置中文字体支持。"""
+    found = False
     try:
         import matplotlib.font_manager as fm
+        import warnings
         # 尝试常见中文字体
         for font_name in ["SimHei", "WenQuanYi Micro Hei", "Noto Sans CJK SC",
                           "Source Han Sans SC", "DejaVu Sans"]:
             try:
                 fm.findfont(font_name, fallback_to_default=False)
                 plt.rcParams["font.sans-serif"] = [font_name]
+                found = True
                 break
             except Exception:
                 continue
     except Exception:
         pass
+
+    if not found:
+        import warnings
+        warnings.warn(
+            "未找到中文字体，图表中的中文可能无法正常显示。"
+            "请安装中文字体包（如 fonts-wqy-microhei）"
+        )
+
     plt.rcParams["axes.unicode_minus"] = False
 
 
