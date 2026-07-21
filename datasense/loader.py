@@ -7,9 +7,14 @@ import csv
 from pathlib import Path
 from typing import Any
 
+# 尝试的编码顺序
+_ENCODINGS = ["utf-8", "gbk", "gb2312", "latin-1"]
+
 
 def load_csv(filepath: str) -> dict[str, Any]:
     """加载CSV文件，返回包含数据和元信息的字典。
+
+    自动尝试多种编码：UTF-8 → GBK → GB2312 → Latin-1。
 
     Args:
         filepath: CSV文件路径
@@ -29,9 +34,23 @@ def load_csv(filepath: str) -> dict[str, Any]:
     if not path.exists():
         raise FileNotFoundError(f"文件不存在: {filepath}")
 
-    with open(filepath, "r", encoding="utf-8") as f:
-        reader = csv.reader(f)
-        rows = list(reader)
+    rows = None
+    last_error = None
+    for encoding in _ENCODINGS:
+        try:
+            with open(filepath, "r", encoding=encoding) as f:
+                reader = csv.reader(f)
+                rows = list(reader)
+            break
+        except UnicodeDecodeError as e:
+            last_error = e
+            continue
+
+    if rows is None:
+        raise ValueError(
+            f"无法解析文件编码，已尝试: {', '.join(_ENCODINGS)}。\n"
+            f"最后错误: {last_error}"
+        )
 
     if not rows:
         raise ValueError("文件为空")

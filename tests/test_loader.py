@@ -55,3 +55,31 @@ def test_empty_csv():
             load_csv(path)
     finally:
         os.unlink(path)
+
+
+def test_gbk_encoding():
+    """测试GBK编码的中文CSV文件能正常加载。"""
+    content = "姓名,年龄,成绩\n张三,20,85.5\n李四,21,92.0\n"
+    with tempfile.NamedTemporaryFile(mode="wb", suffix=".csv", delete=False) as f:
+        f.write(content.encode("gbk"))
+        path = f.name
+    try:
+        data = load_csv(path)
+        assert data["headers"] == ["姓名", "年龄", "成绩"]
+        assert len(data["rows"]) == 2
+        assert data["rows"][0][0] == "张三"
+    finally:
+        os.unlink(path)
+
+
+def test_all_encodings_fail():
+    """测试所有编码都失败时抛出 ValueError。"""
+    # 创建一个全是二进制数据的"CSV"文件
+    with tempfile.NamedTemporaryFile(mode="wb", suffix=".csv", delete=False) as f:
+        f.write(b"\xff\xfe\x00\x01\x02\x03")
+        path = f.name
+    try:
+        with pytest.raises(ValueError, match="无法解析文件编码"):
+            load_csv(path)
+    finally:
+        os.unlink(path)
