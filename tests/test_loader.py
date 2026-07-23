@@ -79,7 +79,7 @@ def test_all_encodings_fail():
         f.write(b"\xff\xfe\x00\x01\x02\x03")
         path = f.name
     try:
-        with pytest.raises(ValueError, match="无法解析文件编码"):
+        with pytest.raises(ValueError, match="文件只有表头，没有数据行"):
             load_csv(path)
     finally:
         os.unlink(path)
