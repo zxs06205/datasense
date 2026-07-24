@@ -43,8 +43,22 @@ def upload_file():
         return jsonify({'error': '请上传CSV文件'}), 400
 
     try:
-        # 读取CSV文件
-        df = pd.read_csv(file.stream)
+        # 尝试多种编码读取CSV文件（与CLI loader同样逻辑）
+        encodings = ['utf-8', 'gbk', 'gb2312', 'latin-1']
+        df = None
+        last_error = None
+        for enc in encodings:
+            try:
+                file.stream.seek(0)
+                df = pd.read_csv(file.stream, encoding=enc)
+                break
+            except (UnicodeDecodeError, UnicodeError) as e:
+                last_error = e
+                continue
+
+        if df is None:
+            return jsonify({'error': f'无法解析文件编码，请确认文件为CSV格式。最后错误: {str(last_error)}'}), 400
+
         session_id = 'default'
         current_data[session_id] = df
         current_filename[session_id] = file.filename
@@ -65,8 +79,8 @@ def load_sample():
     try:
         # 获取当前web应用所在目录
         web_dir = os.path.dirname(os.path.abspath(__file__))
-        # 获取datasense-main项目目录（web目录的父目录下的datasense-main文件夹）
-        project_dir = os.path.join(os.path.dirname(web_dir), 'datasense-main')
+        # datasense项目根目录（web目录的父目录）
+        project_dir = os.path.dirname(web_dir)
         # 示例数据路径
         sample_path = os.path.join(project_dir, 'examples', 'iris.csv')
 
