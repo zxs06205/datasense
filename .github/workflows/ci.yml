@@ -24,7 +24,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest matplotlib numpy
           pip install -e .
+      - name: Test import
+        run: python -c "from datasense.loader import load_csv; from datasense.stats import compute_stats; from datasense.visualize import plot_scatter; print('All imports OK')"
       - name: Run tests
-        run: |
-          python -m pytest tests/ -v --tb=short
-
+        run: python -m pytest tests/ -v 2>&1 | tee pytest_output.txt
+      - name: Show test output on failure
+        if: failure()
+        run: cat pytest_output.txt
