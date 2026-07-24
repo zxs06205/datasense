@@ -3,6 +3,8 @@
 提供 plot_scatter() 和 plot_histogram() 函数。
 """
 
+from __future__ import annotations
+
 import matplotlib
 matplotlib.use("Agg")  # 非交互后端
 

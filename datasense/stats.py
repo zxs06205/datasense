@@ -4,6 +4,7 @@
 均值、标准差、最小值、25%分位数、中位数、75%分位数、最大值。
 """
 
+from __future__ import annotations
 import math
 from typing import Any
 

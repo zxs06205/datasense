@@ -3,6 +3,7 @@
 提供 load_csv() 函数，自动检测编码、识别列类型、处理缺失值。
 """
 
+from __future__ import annotations
 import csv
 from pathlib import Path
 from typing import Any
